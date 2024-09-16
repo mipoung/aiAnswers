@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+      
+<th:block layout:fragment="headContent">
+	<style>
+		.container-sm { max-width : 500px; margin-top : 5vh;}
+		.container { text-align : center;}
+	</style>
+	<script>
+		function userInsertVwBtn(){
+		//	alert('회원가입 페이지로 이동');
+			window.location.href = '/userInsertVw';
+		}
+	</script>
+</th:block>
+<body>
+	<div layout:fragment="content">
+		<div class="container-sm">
+		    <h1>로그인</h1>
+		    <form th:action="@{/login}" method="post">
+		        <label for="username">유저ID</label>
+		      <!--   <input type="text" id="username" name="username" required /> -->
+		        <input class="form-control" type="text" id="username" name="username" required aria-label="default input example">
+		        <br/>
+		        <label for="password">비밀번호</label>
+		        <!-- <input type="password" id="password" name="password" required /> -->
+		        <input type="password" id="password" name="password" required class="form-control" aria-describedby="passwordHelpBlock">
+		        <br/>
+		         <div th:if="${param.error}" class="error alert alert-danger" role="alert">
+				  유저ID 혹은 비밀번호가 일치하지 않습니다.
+				</div>
+		        <div class="container">
+		       		<button type="submit" class="btn btn-secondary">로그인</button>
+		       		<button type="button" class="btn btn-secondary" onclick="userInsertVwBtn();">회원가입</button>
+		        </div>
+		     <!--    <button type="submit">로그인</button> -->
+		       <!--  <p th:if="${param.error}" class="error">유저ID 혹은 비밀번호가 일치하지 않습니다.</p> -->
+		    </form>
+	    </div>
+    </div>
+</body>
+</html>

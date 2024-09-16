@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.aiAnswers.mapper.QuestionMapper">
+	
+    
+    <select id="questionMainList" parameterType="map" resultType="com.aiAnswers.dto.QuestionDTO">
+    	 SELECT TB.* FROM (
+	    	 SELECT 
+	    	 	@ROWNUM:=@ROWNUM+1 AS ROW_NUM,
+	    		QUESTIONS_NO,
+	    		CATEGORIES_NO,
+	    		TITLE,
+	    		CONTENT,
+	    		USER_NO,
+	    		USERNAME,
+	    	  	DATE_FORMAT(CREATED_AT, '%Y-%m-%d %H:%i') as CREATED_AT,
+	   			DATE_FORMAT(UPDATED_AT, '%Y-%m-%d %H:%i') as UPDATED_AT
+	    	FROM QUESTIONS, (SELECT @ROWNUM:=0) AS R 
+	    	WHERE USER_NO = (SELECT USER_NO FROM USER WHERE USERNAME = #{username}) 
+	    	<!-- <choose>
+		        <when test="categoriesNo != null and categoriesNo != ''">
+		            AND CATEGORIES_NO = #{categoriesNo}
+		        </when>
+		        <otherwise>
+		            AND CATEGORIES_NO = 1
+		        </otherwise>
+		    </choose> ) TB -->
+		    <choose>
+		        <when test="categoriesNo != null and categoriesNo != ''">
+		            AND CATEGORIES_NO = #{categoriesNo}
+		        </when>
+		        <otherwise>
+		            AND CATEGORIES_NO = (
+		                SELECT MIN(CATEGORIES_NO) 
+		                FROM CATEGORIES 
+		                WHERE USER_NO = (SELECT USER_NO FROM USER WHERE USERNAME = #{username})
+		            )
+		        </otherwise>
+		    </choose> ) TB
+	    ORDER BY ROW_NUM LIMIT #{limit} OFFSET #{offset} 
+	    
+    	
+    </select>
+    
+     <select id="questionMainListCnt" parameterType="map" resultType="int">
+    	 SELECT COUNT(*) FROM (
+    	 SELECT 
+    	 	@ROWNUM:=@ROWNUM+1 AS ROW_NUM,
+    		QUESTIONS_NO,
+    		CATEGORIES_NO,
+    		TITLE,
+    		CONTENT,
+    		USER_NO,
+    		USERNAME,
+    	  	DATE_FORMAT(CREATED_AT, '%Y-%m-%d %H:%i') as CREATED_AT,
+   			DATE_FORMAT(UPDATED_AT, '%Y-%m-%d %H:%i') as UPDATED_AT
+    	FROM QUESTIONS, (SELECT @ROWNUM:=0) AS R 
+    	WHERE USER_NO = (SELECT USER_NO FROM USER WHERE USERNAME = #{username}) 
+    	<choose>
+	        <when test="categoriesNo != null and categoriesNo != ''">
+	            AND CATEGORIES_NO = #{categoriesNo}
+	        </when>
+	        <otherwise>
+	            AND CATEGORIES_NO = 1
+	        </otherwise>
+	    </choose>
+	    ) AB
+    	
+    </select>
+    
+    <insert id="questionInsert" parameterType="com.aiAnswers.dto.QuestionDTO">
+    	INSERT INTO QUESTIONS (
+		    CATEGORIES_NO,
+		    TITLE,
+		    CONTENT,
+		    USER_NO,
+		    USERNAME,
+		    CREATED_AT,
+		    UPDATED_AT
+		) VALUES (
+		    #{categoriesNo},
+		    #{title},
+		    #{content},
+		    (select USER_NO from USER where USERNAME = #{username}), 
+		    #{username},
+		    NOW(),
+		    NOW()
+		);
+    </insert>
+    
+    
+    
+    <select id="answersCnt" resultType="int">
+    	select ANSWERS_COUNT from USER_QUESTION_LIMIT 
+    	where USER_NO = (SELECT USER_NO FROM USER WHERE USERNAME = #{username})
+    </select>
+    
+    <update id="minusAnswersCnt">
+    	update USER_QUESTION_LIMIT
+		set ANSWERS_COUNT = ANSWERS_COUNT-1
+		where USER_NO = (SELECT USER_NO FROM USER WHERE USERNAME = #{username})
+    </update>
+    
+    <select id="categoriesList" resultType="com.aiAnswers.dto.CategoriesDTO">
+    	<!-- select * from CATEGORIES
+		where USER_NO = (SELECT USER_NO FROM USER WHERE USERNAME = #{username});
+		 -->
+		select A.CATEGORIES_NO, A.NAME, A.CREATED_AT, COUNT(B.QUESTIONS_NO) AS QUESTIONS_CNT
+		from CATEGORIES A LEFT JOIN QUESTIONS B
+		ON A.CATEGORIES_NO = B.CATEGORIES_NO 
+		where A.USER_NO = (SELECT USER_NO FROM USER WHERE USERNAME = #{username})
+		GROUP BY A.NAME
+		ORDER BY A.CREATED_AT
+    </select>
+    
+    <delete id="deleteQuestion">
+    	delete from QUESTIONS
+		where QUESTIONS_NO = #{questionsNo} and USERNAME = #{username}
+    </delete>
+    
+    <update id="updateQuestion">
+    	UPDATE QUESTIONS
+    	SET TITLE = #{title}, CONTENT = #{content}
+    	WHERE QUESTIONS_NO = #{questionsNo} and USERNAME = #{username}
+    
+    </update>
+    
+    <select id="updateQuestionVw" resultType="map">
+    	select A.CATEGORIES_NO as categoriesNo,
+    	A.QUESTIONS_NO as questionsNo,
+    	A.TITLE as title,
+    	A.CONTENT as content,
+    	A.USER_NO as userNo,
+    	A.USERNAME as username,
+    	B.NAME as name
+    	FROM QUESTIONS A JOIN CATEGORIES B
+		ON A.CATEGORIES_NO = B.CATEGORIES_NO
+    	WHERE A.QUESTIONS_NO = #{questionsNo} and A.USERNAME = #{username}
+    </select>
+
+	<!--  
+    <select id="findById" parameterType="int" resultType="User">
+        SELECT * FROM users WHERE id = #{id}
+    </select>
+    -->
+    <insert id="insertHistory">
+    	insert into HISTORY (TITLE, CONTENT, USERNAME)
+    	VALUES(#{title}, #{content}, #{username})
+    </insert>
+    
+    <insert id="categoriesInsert">
+		INSERT INTO CATEGORIES (CATEGORIES_NO, USER_NO, NAME)
+		SELECT 
+		    (MAX(C.CATEGORIES_NO) + 1), 
+		    U.USER_NO, 
+		    #{name}
+		FROM 
+		    CATEGORIES C
+		INNER JOIN 
+		    USER U ON U.USERNAME = #{username}
+		GROUP BY 
+		    U.USER_NO
+    </insert>
+    
+     <delete id="deleteQuestionBeforeDeleteCategories">
+    	delete from QUESTIONS
+		where CATEGORIES_NO = #{categoriesNo} and USERNAME = #{username}
+    </delete>
+    
+    <delete id="deleteCategories">
+    	delete from CATEGORIES
+		where CATEGORIES_NO = #{categoriesNo} and USER_NO = (SELECT USER_NO FROM USER WHERE USERNAME = #{username})
+    
+    </delete>
+    
+    <select id="randomQuestion" parameterType="map" resultType="com.aiAnswers.dto.QuestionDTO">
+    	SELECT * 
+		FROM QUESTIONS
+		WHERE DATE_FORMAT(UPDATED_AT, '%Y-%m-%d') != DATE_FORMAT(NOW(), '%Y-%m-%d')
+		and USER_NO = (SELECT USER_NO FROM USER WHERE USERNAME = #{username})
+		ORDER BY CHECK_CNT IS NULL, RAND()
+		LIMIT 1
+		
+
+    
+    </select>
+    
+    
+</mapper>

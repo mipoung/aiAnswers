@@ -1,0 +1,152 @@
+<!--resources/templates/fragments/header.html-->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<!-- 상단메뉴 -->
+    <div th:fragment="header" id="header">
+    
+		<!-- <nav class="navbar navbar-expand-lg bg-body-tertiary"> style="background-color: #e3f2fd;
+			<div class="container-fluid">
+				<a class="navbar-brand" href="/">aiAnswers</a>
+				<button class="navbar-toggler" type="button"
+					data-bs-toggle="collapse" data-bs-target="#navbarNav"
+					aria-controls="navbarNav" aria-expanded="false"
+					aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarNav">
+					<ul class="navbar-nav">
+						<li class="nav-item"><a class="nav-link active" aria-current="page" href="/questionMainVw">문제</a></li>
+						<li class="nav-item"><a class="nav-link" href="/devHistory">개발기록</a></li>
+						<li class="nav-item"><a class="nav-link" href="#">분석</a></li>
+						<li class="nav-item"><a class="nav-link" href="#">랭킹</a></li>
+						<li class="nav-item"><a class="nav-link disabled" aria-disabled="true">로그인</a></li>
+						<li class="nav-item">
+                            <form action="/logout" method="post">
+                                <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+                                <button type="submit" class="nav-link btn btn-link" style="text-decoration: none; padding: 0;">로그아웃</button>
+                            </form>
+                        </li>
+					</ul>
+				</div>
+			</div>
+			
+			로딩레이어
+			<div id="loading-spinner" style="display: none;">
+				  <div class="spinner-border text-primary" role="status">
+				    <span class="visually-hidden">Loading...</span>
+				  </div>
+			</div>
+			
+			
+			
+		</nav>
+ -->
+	<nav class="navbar navbar-expand-lg navbar-light bg-body-tertiary"
+		aria-label="Offcanvas navbar large">
+		<div class="container-fluid">
+			<a class="navbar-brand" href="/"><img src="/images/favicon/favicon.ico" alt="AiWorkbook" width="30" height="30"> AiWorkbook</a>
+			<button class="navbar-toggler" type="button"
+				data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar"
+				aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+				<span class="navbar-toggler-icon"></span>
+			</button>
+			<div class="offcanvas offcanvas-end" tabindex="-1"
+				id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+				<div class="offcanvas-header">
+					<h5 class="offcanvas-title" id="offcanvasNavbarLabel">메뉴</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="offcanvas"
+						aria-label="Close"></button>
+				</div>
+				<div class="offcanvas-body">
+					<ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+						<li class="nav-item"><a class="nav-link" id="menu-question"
+							href="/questionMainVw">문제</a></li>
+						<li class="nav-item"><a class="nav-link" id="menu-devhistory"
+							href="/devHistory">개발기록</a></li>
+						<li class="nav-item"><a class="nav-link" id="menu-analysis"
+							href="#">분석</a></li>
+						<li class="nav-item"><a class="nav-link" id="menu-ranking"
+							href="#">랭킹</a></li>
+						<hr>
+						
+						<li class="nav-item" th:if="${loginUser != null and loginUser != 'anonymousUser'}">
+						<a class="nav-link" id="menu-analysis" href="#" th:text="${loginUser}" style="color:darkred;"></a>
+						</li>
+						<!-- <li class="nav-item"><a class="nav-link disabled"
+							aria-disabled="true">로그인</a></li> -->
+						<!-- <li class="nav-item" th:text="${loginUser}"></li>			 -->
+						<!-- 로그인 사용자 이름 표시 (로그인 된 경우) -->
+						<!-- 로그인 사용자 이름 표시 (로그인 된 경우) -->
+						<li class="nav-item" th:if="${loginUser != null and loginUser != 'anonymousUser'}">
+						    
+						    <form action="/logout" method="post">
+						        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
+						        <button type="submit" class="nav-link btn btn-link">로그아웃</button>
+						    </form>
+						</li>
+						
+						<!-- 로그인 버튼 (loginUser가 null이거나 'anonymousUser'인 경우에만 표시) -->
+						<li class="nav-item" th:if="${loginUser == null or loginUser == 'anonymousUser'}">
+						   <!--  <a href="/login" class="btn btn-primary">로그인</a> -->
+						    <a class="nav-link" href="/login" aria-disabled="true">로그인</a>
+						</li>
+						<li class="nav-item" th:if="${loginUser == null or loginUser == 'anonymousUser'}">
+						    <a class="nav-link" href="userInsertVw" aria-disabled="true">회원가입</a>
+						</li>
+
+						
+						<!-- 로그아웃 버튼 (loginUser가 null이 아닌 경우에만 표시) -->
+						<!-- <li class="nav-item" th:if="${loginUser != null}">
+						    <a href="/logout" class="btn btn-secondary">로그아웃</a>
+						</li> -->
+						
+							
+						<!-- <li class="nav-item">
+							<form action="/logout" method="post">
+								<input type="hidden" name="${_csrf.parameterName}"
+									value="${_csrf.token}" />
+								<button type="submit" class="nav-link btn btn-link">로그아웃</button>
+							</form>
+						</li> -->
+					</ul>
+				</div>
+			</div>
+		</div>
+	</nav>
+	
+
+	<!-- 로딩레이어 -->
+	<div id="loading-spinner" style="display: none;">
+		<div class="spinner-border text-primary" role="status">
+			<span class="visually-hidden">Loading...</span>
+		</div>
+	</div>
+
+	<script>
+	  // 현재 페이지 URL에 따라 active 클래스 추가
+	  document.addEventListener('DOMContentLoaded', function() {
+	    const currentPath = window.location.pathname;
+	    const menuItems = {
+	      '/questionMainVw': 'menu-question',
+	      '/devHistory': 'menu-devhistory',
+	      // 다른 메뉴 항목에 대한 매핑을 여기에 추가
+	    };
+	
+	    for (const [path, menuId] of Object.entries(menuItems)) {
+	      if (currentPath.startsWith(path)) {
+	        document.getElementById(menuId).classList.add('active');
+	        break;
+	      }
+	    }
+	  });
+	  
+	  function userInsertVwBtn(){
+			//	alert('회원가입 페이지로 이동');
+				window.location.href = '/userInsertVw';
+	  }
+	</script>
+
+
+</div>
+</html>

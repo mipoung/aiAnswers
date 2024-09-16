@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<!-- head 태그를 포함하지 않고, headContent 프래그먼트를 사용 -->
+<th:block layout:fragment="headContent">
+    <style>
+    	.list-group{
+    		max-width : 400px;
+    		text-align : center;
+    	}
+    	
+    	#list{
+    		margin : 0 auto;
+    		max-width : 330px;
+    	}
+    </style>
+	<script>
+		$(function(){
+			
+			
+		});
+		
+		function categoriesInsertBtn(){
+			if($("#categoriesInput").val() == ""){
+				alert('값을 입력해주세요.')
+				return;
+			} 
+			
+			//서브밋
+		    $("#categoriesInsertFm").submit();
+			
+			
+		}
+		
+		function categoriesUpdateDeleteBtn(element) {
+            // 클릭한 li 요소의 부모 요소를 찾습니다.
+            const li = $(element);
+
+            // 새로운 div 생성 및 내용을 추가합니다.
+            const newDiv = $("<div>여기에 업데이트 및 삭제 버튼을 추가할 수 있습니다.</div>");
+
+            // 생성한 div를 li 요소의 아래에 삽입합니다.
+            li.append(newDiv);
+        }
+		
+		function categoriesDelete(categoriesNo){
+			if(confirm('카테고리에 속한 모든 문제가 삭제됩니다. 그래도 삭제 하시겠습니까?')){
+	            $.ajax({
+	                type: "POST",
+	                data: { categoriesNo: categoriesNo },  // 수정된 부분
+	                url: "/deleteCategories",
+	                success: function(response) {
+	                	 if(response === 1) { // 삭제 성공
+	                         alert('삭제 되었습니다!');
+	                         window.location.reload();
+	                     } else {
+	                         alert('삭제 실패');
+	                     }
+	                },
+	                error: function(xhr, status, error) {
+	                    alert('실패');
+	                }
+	            });
+        	} 
+			
+		}
+		
+	</script>    
+</th:block>
+<body>
+    <div layout:fragment="content" id="content">
+    	<div class="alert alert-info" role="alert">
+		  카테고리 제목을 입력 후 카테고리 추가를 눌러주세요. 카테고리 추가가 완료되면 문제 페이지에서 문제를 입력한 후 사용해주세요.
+		</div>
+		<div id="list">
+			<!-- <ul class="list-group list-group-numbered" th:each="item : ${categoriesList}">
+				<li class="list-group-item" th:text="${item.name}">
+				<span class="badge text-bg-primary rounded-pill">14</span>
+				</li>
+				
+			</ul> -->
+			<ul class="list-group" th:each="item : ${categoriesList}">
+				 <li class="list-group-item" style="margin-bottom:5px;">
+			        <span th:text="${item.name}"></span>
+			        <span class="badge text-bg-primary rounded-pill" th:text="${item.questionsCnt}"></span>
+			        <span class="badge text-bg-danger rounded-pill" th:text="삭제" style="float:right; cursor: pointer;" th:onclick="'categoriesDelete(' + ${item.categoriesNo} + ')'"></span>
+			    </li>
+			</ul>
+			
+			<form id="categoriesInsertFm" method="POST" action="/categoriesInsert">
+				<div class="input-group mb-3" style="margin-top : 15px;">
+					<input type="text" class="form-control" placeholder="카테고리명 입력" aria-label="Recipient's username" aria-describedby="button-addon2" id="categoriesInput" name="name">
+					<button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="categoriesInsertBtn()">카테고리 추가</button>
+				</div>
+				<div th:if="${msg}" class="alert alert-info" role="alert" th:text="${msg}" style="margin-bottom: 15px;"></div>
+				
+				<div class="d-flex justify-content-center">
+				    <button type="button" class="btn btn-warning" onclick="window.location.href='/questionMainVw'">목록으로 돌아가기</button>
+				</div>
+
+			</form>
+		</div>
+
+	</div>
+	
+</body>
+</html>

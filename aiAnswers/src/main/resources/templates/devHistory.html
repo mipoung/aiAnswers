@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<!-- head 태그를 포함하지 않고, headContent 프래그먼트를 사용 -->
+<th:block layout:fragment="headContent">
+    <style>
+	/* 기본 테이블 스타일 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+	</style>
+	<script>
+         // $("#chatForm").on("submit", function(event){
+        function devHistoryInsert (){
+            //  event.preventDefault(); // 수정된 부분: 오타 수정
+              var message = $("#exampleFormControlTextarea1").val(); // textarea의 값을 가져옴
+
+	          if (!message) {
+	              alert("메시지를 입력해주세요."); // 입력값이 없을 경우 경고
+	              return;
+	          }
+              
+              
+              $.ajax({
+                  type: "POST",
+                  url: "/devHistoryInsert",
+                /*   contentType: "application/json", */
+                 /*  data: JSON.stringify({content: message}), */
+                  data: {content: message},
+                  success: function(response){
+                	  if(response == 1){
+                		   window.location.reload();
+                	  } else {
+                		  alert('입력실패');
+                	  }
+                  },
+                  error: function(xhr, status, error){
+                      $("#response").html("에러: " + xhr.responseText); // 에러 시 메시지
+                      if (xhr.status === 403) {
+                          $("#response").html("권한이 없습니다."); // 403 Forbidden 처리
+                      }
+                  }
+              });
+         } 
+          //});
+    </script>
+</th:block>
+<body>
+	<div layout:fragment="content" id="content">
+		<table border="1">
+		    <thead>
+		        <tr>
+		        	<th>No</th>
+		            <th>내용</th>
+		        </tr>
+		    </thead>
+		    <tbody>
+		        <tr th:each="item : ${result}">
+		        	<td th:text="${item.no}"></td>
+		            <td th:utext="${item.content + '<br><hr>'+item.createdAt}"></td>
+		        </tr>
+		    </tbody>
+		</table>
+
+		<div class="mb-3">
+			<textarea class="form-control" id="exampleFormControlTextarea1" name="devHistory" rows="3"></textarea>
+			<button type="button" class="btn btn-primary" onclick="devHistoryInsert()">입력</button>
+			<div id="response" style="border-bottom: 1px solid; padding-bottom: 10px;"></div>
+		</div>
+		
+
+	</div>
+    
+     
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<!-- head 태그를 포함하지 않고, headContent 프래그먼트를 사용 -->
+<th:block layout:fragment="headContent">
+    <style>
+        .card { margin-bottom: 3vh; }
+    </style>
+	<script>
+		$(function(){
+			
+			
+		});
+	</script>    
+</th:block>
+<body>
+    <div layout:fragment="content" id="content">
+       <p>문제 입력</p>
+       <div class="mb-3" style="text-align: center;">
+	       <form id="questionInsertFm" name="questionInsertFm" method="post" action="/questionInsert">
+	       		<select class="form-select form-select-lg mb-3" aria-label="Large select example" id="categorySelect" name="categoriesNo">
+				    <option th:each="category : ${categoriesList}"
+				            th:value="${category.categoriesNo}"
+				            th:text="${category.name}" th:selected="${category.categoriesNo == selectedCategoryNo}">>
+				            
+				    </option>
+				</select>
+				
+	       	  	<input class="form-control" type="text" name="title" placeholder="문제 제목을 입력하세요" aria-label="default input example">
+				<textarea class="form-control" id="exampleFormControlTextarea1" name="content" rows="7" placeholder="문제 내용을 입력하세요"
+				style="margin-top: 10px; margin-bottom: 10px;"></textarea> <!-- 텍스트 에디터로 변경 예정 -->
+				
+				<div th:if="${msg}" class="alert alert-info" role="alert" th:text="${msg}" style="margin-bottom: 10px;"></div>
+				
+				<button type="button" class="btn btn-warning" onclick="window.location.href='/questionMainVw'">목록으로 돌아가기</button>
+				<button type="submit"class="btn btn-warning">저장</button>
+				
+				
+			</form>	
+		</div>
+		
+    </div>
+</body>
+</html>

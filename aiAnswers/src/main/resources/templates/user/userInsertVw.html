@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+      
+<th:block layout:fragment="headContent">
+	<style>
+		.container-sm { max-width : 500px; margin-top : 5vh;}
+		.container { text-align : center;}
+	</style>
+	<script>
+		var insertFlag = false;
+		var idChk = false;
+		var pwChk = false;
+		var emailChk = false;
+
+		// ID 입력 시 대문자를 소문자로 변환하는 함수
+		function toLowerCaseInput(input) {
+		    input.value = input.value.toLowerCase();
+		}
+		
+		function usernameDupChk() {
+		    var username = $("#username").val();
+		    
+			// 영문자와 숫자만 허용하는 정규 표현식
+		    var usernameRegex = /^[A-Za-z0-9]+$/;
+
+		    // 아이디 유효성 검사
+		    if (!username) {
+		        $("#response").html("아이디를 입력해주세요.");
+		        return;
+		    } else if (!usernameRegex.test(username)) {
+		        $("#response").html("아이디는 영문자와 숫자만 입력 가능합니다.");
+		        idChk = false; // 유효하지 않으면 false로 설정
+		        return;
+		    }
+	
+		    $.ajax({
+		        type: "POST",
+		        url: "/userNameDupChk",
+		        contentType: "application/json",
+		        data: JSON.stringify({username: username}),
+		        success: function(response) {
+		            $("#response").html(response);
+		            $("#response").removeClass("text-danger text-success").addClass(response.includes("사용 가능") ? "text-success" : "text-danger");
+		            idChk = true;
+		        },
+		        error: function(xhr, status, error) {
+		            $("#response").html(xhr.responseText);
+		            $("#response").removeClass("text-success").addClass("text-danger");
+		            idChk = false;
+		        }
+		    });
+		}
+		
+		function checkPassword(inputElement) {
+		    var firstPw = $("#inputPassword5").val();
+		    var secondPw = $("#inputPassword6").val();
+		    var passwordHelpBlock = $("#confirmPasswordHelpBlock");
+		    
+		    // 비밀번호 형식 검사 정규 표현식
+		    var passwordRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>~`_\-\+=\[\]\\\/])[A-Za-z\d!@#$%^&*(),.?":{}|<>~`_\-\+=\[\]\\\/]{6,}$/;
+
+		    // 초기 상태
+		    passwordHelpBlock.html("").removeClass("text-danger text-success");
+		    
+		    // 비밀번호가 비어있을 경우
+		    if (firstPw === "" && secondPw === "") {
+		        passwordHelpBlock.html("").removeClass("text-danger text-success");
+		        pwChk = false;
+		    }
+		    // 비밀번호 형식 검사
+		    else if (!passwordRegex.test(firstPw)) {
+		        passwordHelpBlock.html("비밀번호는 6자리 이상, 영문자 및 숫자, 특수문자가 포함되어야 합니다.").removeClass("text-success").addClass("text-danger");
+		        pwChk = false;
+		    }
+		    // 비밀번호 일치 여부 검사
+		    else if (firstPw !== secondPw) {
+		        passwordHelpBlock.html("비밀번호가 일치하지 않습니다.").removeClass("text-success").addClass("text-danger");
+		        pwChk = false;
+		    }
+		    // 비밀번호가 일치하고 형식이 올바를 경우
+		    else {
+		        passwordHelpBlock.html("비밀번호가 일치합니다.").removeClass("text-danger").addClass("text-success");
+		        pwChk = true;
+		    }
+		}
+
+		function checkEmail() {
+            var email = $("#exampleFormControlInput1").val();
+            var emailHelp = $("#emailHelp");
+            var emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/; // 이메일 정규 표현식
+
+            if (emailRegex.test(email)) {
+                emailHelp.html("유효한 이메일 형식입니다.").removeClass("text-danger").addClass("text-success");
+                emailChk = true;
+            } else {
+                emailHelp.html("유효하지 않은 이메일 형식입니다.").removeClass("text-success").addClass("text-danger");
+                emailChk = false;
+            }
+        }
+		
+		function userInsertBtn(){
+			console.log(idChk + " " + pwChk + " " + emailChk);
+			if(idChk == true && pwChk == true && emailChk == true){
+				
+				var formData = {
+		            username: $("#username").val(),
+		            password: $("#inputPassword5").val(),
+		            email: $("#exampleFormControlInput1").val()
+		        };
+				
+				$.ajax({
+                    type: "POST",
+                    url: "/userInsert",
+                    contentType: "application/json",
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                        alert(response);
+                        window.location.href = "/";
+                    },
+                    error: function(xhr) {
+                        alert(xhr.responseText);
+                    }
+                });
+			} else {
+				alert('불가');
+			}
+		};
+		
+		function validateUsername() {
+		    var username = $("#username").val();
+		    var usernameHelp = $("#response");
+		    var usernameRegex = /^[A-Za-z0-9]+$/; // 영문자와 숫자만 허용하는 정규 표현식
+
+		    if (usernameRegex.test(username)) {
+		        usernameHelp.html("").removeClass("text-danger").addClass("text-success");
+		        idChk = true; // 유효한 입력이므로 idChk를 true로 설정
+		    } else {
+		        usernameHelp.html("아이디는 영문자와 숫자만 입력 가능합니다.").removeClass("text-success").addClass("text-danger");
+		        idChk = false; // 유효하지 않은 입력이므로 idChk를 false로 설정
+		    }
+		}
+		
+		$(document).ready(function() {
+		    $("#username").on("input", function() {
+		        toLowerCaseInput(this);  // 입력 시 소문자로 변환
+		        $("#response").html("");
+		        validateUsername(); // 입력할 때마다 유효성 검사 수행
+		    });
+		    
+		    $("#inputPassword6").on("keyup", checkPassword);
+		    
+		    $("#exampleFormControlInput1").on("keyup", checkEmail);
+		    
+		    $("#username").on("input", function() {
+		        toLowerCaseInput(this);  // 입력 시 소문자로 변환
+		        $("#response").html("");
+		        validateUsername(); // 입력할 때마다 유효성 검사 수행
+		    });
+		});
+	</script>
+</th:block>
+<body>
+	<div layout:fragment="content">
+	<form id="userInsertFm" action="/userInsert" method="POST">
+		<div class="mb-3" style="margin:10px;">
+			<label for="inputPassword5" class="form-label">ID</label>
+			<div class="input-group mb-3">
+			    <input type="text" class="form-control" id="username" name="username" placeholder="아이디를 입력해주세요" 
+			       aria-label="Recipient's username" aria-describedby="button-addon2" 
+			       pattern="[A-Za-z0-9]+" title="영문자와 숫자만 입력 가능합니다." oninput="toLowerCaseInput(this); validateUsername();">
+			    <button class="btn btn-outline-secondary" type="button" id="button-addon2" onclick="usernameDupChk();">중복검사</button>
+			</div>
+			<div id="response" style="padding-bottom: 10px;"></div>
+			
+			<label for="inputPassword5" class="form-label">비밀번호</label> 
+			<input type="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock">
+			<div id="passwordHelpBlock" class="form-text">
+				비밀번호는 6자리 이상 영문, 숫자, 특수문자 섞어서 입력해주세요.
+			</div>
+			<label for="inputPassword6" class="form-label" style="margin-top:15px">비밀번호 재입력</label> 
+			<input type="password" id="inputPassword6" name="password" class="form-control" aria-describedby="passwordHelpBlock">
+			
+			<div id="confirmPasswordHelpBlock"></div>
+				
+			<label for="exampleFormControlInput1" class="form-label" style="margin-top:15px">이메일 주소</label>
+	  		<input type="email" class="form-control" id="exampleFormControlInput1" placeholder="name@example.com" name="email">
+			<div id="emailHelp"></div>
+
+			<div class="d-grid gap-2" style="margin-top:30px;">
+				<button class="btn btn-primary" type="button" onclick="userInsertBtn();">회원가입 하기</button>
+			</div>
+		</div>
+
+	</form>
+	</div>
+</body>
+</html>

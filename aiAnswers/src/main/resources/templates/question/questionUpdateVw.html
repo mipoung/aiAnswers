@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+
+<!-- head 태그를 포함하지 않고, headContent 프래그먼트를 사용 -->
+<th:block layout:fragment="headContent">
+    <style>
+        .card { margin-bottom: 3vh; }
+    </style>
+	<script>
+	/* function updateQuestion(){
+			
+			$.ajax({
+            type: "POST",
+            data: { questionsNo: ${item['questionsNo']} },  // 수정된 부분
+            url: "/questionUpdate",
+            success: function(response) {
+            	 if(response === 1) { // 삭제 성공
+                     alert('수정 되었습니다!');
+                     window.location.reload();
+                 } else {
+                     alert('수정 실패');
+                 }
+            },
+            error: function(xhr, status, error) {
+                alert('실패');
+            }
+        });
+    } */
+    
+    function questionMainVw(){
+    	 var categoryNo = document.getElementById('categorySelect').value;  // 선택된 카테고리 번호를 가져옵니다.
+         var url = '/questionMainVw?categoryNo=' + encodeURIComponent(categoryNo);
+         window.location.href = url;  // 카테고리 번호를 포함한 URL로 이동합니다.
+    }
+	
+	function updateQuestion(questionsNo) {
+         var form = $('#questionInsertFm');
+         var formData = form.serialize();
+         
+         $.ajax({
+             type: "POST",
+             data: formData,
+             url: "/questionUpdate",
+             success: function(response) {
+                 if(response === 1) {
+                     alert('수정 되었습니다!');
+                     var categoriesNo = $('#categorySelect').val();
+                     window.location.href = '/questionMainVw?categoryNo='+ encodeURIComponent(categoriesNo);
+                 } else {
+                     alert('수정 실패');
+                 }
+             },
+             error: function(xhr, status, error) {
+                 alert('실패: ' + error);
+             }
+         });
+     }
+	</script>    
+</th:block>
+<body>
+    <div layout:fragment="content" id="content">
+       <p>문제 입력</p>
+       <div class="mb-3" style="text-align: center;">
+	       <form id="questionInsertFm">
+	       		<select class="form-select form-select-lg mb-3" aria-label="Large select example" id="categorySelect" name="categoriesNo">
+				   <option th:value="${item['categoriesNo']}" th:text="${item['name']}"></option>
+				</select>
+				
+	       	  	<input class="form-control" type="text" name="title" placeholder="문제 제목을 입력하세요" aria-label="default input example" th:value="${item['title']}">
+				<textarea class="form-control" id="exampleFormControlTextarea1" name="content" rows="7" placeholder="문제 내용을 입력하세요"
+				style="margin-top: 10px; margin-bottom: 10px;" th:utext="${item['content']}"></textarea> <!-- 텍스트 에디터로 변경 예정 -->
+				
+				
+				<!-- <div th:if="${msg}" class="alert alert-info" role="alert" th:text="${msg}" style="margin-bottom: 10px;"></div> -->
+				
+				<button type="button" class="btn btn-warning" onclick="questionMainVw()">목록으로 돌아가기</button>
+				
+                <button type="button" class="btn btn-warning" th:onclick="'updateQuestion(' + ${item['questionsNo']} + ')'">수정</button>
+				<input type="hidden" name="questionsNo" th:value="${item.questionsNo}">
+				
+				
+			</form>	
+		</div>
+		
+    </div>
+</body>
+</html>
